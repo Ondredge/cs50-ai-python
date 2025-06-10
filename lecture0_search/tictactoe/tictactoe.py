@@ -18,7 +18,7 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY]]
 
 
-def player(board):
+def whoseTurn(board):
     x_count = sum(row.count(X) for row in board)
     o_count = sum(row.count(O) for row in board)
     if x_count > o_count:
@@ -27,7 +27,7 @@ def player(board):
         return X # X starts first
 
 
-def actions(board):
+def allPossibleMoves(board):
     # Returns a set of all possible actions (i, j) available on the board.
     actions = set()
     for i in range(3):
@@ -37,13 +37,13 @@ def actions(board):
     return actions
 
 
-def result(board, action):
+def resultingBoardFromMove(board, action):
     # Returns the board that results from making a move (i, j) on the board.
     i, j = action
     if board[i][j] is not EMPTY:
         raise ValueError("Invalid action: Cell is already occupied.")
     new_board = [row[:] for row in board]  # Create a copy of the board
-    new_board[i][j] = player(board)  # Place the current player's mark
+    new_board[i][j] = whoseTurn(board)  # Place the current player's mark
     return new_board
 
 
@@ -77,7 +77,7 @@ def terminal(board):
         return True # Board is full so its a draw
     return False # no Winner
 
-def utility(board):
+def gameResult(board):
     # Returns 1 if X has won, -1 if O has won, and 0 otherwise.
     win = winner(board)
     if win == X:
@@ -92,7 +92,7 @@ def minimax(board):
     #return the action that leads to the best outcome for the current player
     if terminal(board):
         return None  # Game is over, no action to take
-    if player(board) == X:
+    if whoseTurn(board) == X:
         # X is maximizing player
         value, action = max_value(board)
         return action
@@ -103,11 +103,11 @@ def minimax(board):
     
 def max_value(board):
     if terminal(board): # is the game over?
-        return utility(board), None  # return who won or return None if its a draw
+        return gameResult(board), None  # return who won or return None if its a draw
     v = -math.inf # Initialize v to negative infinity for maximizing player
     best_action = None
-    for action in actions(board): # For all possile actions
-        new_board = result(board, action) # Get the new board after making a possible action
+    for action in allPossibleMoves(board): # For all possile actions
+        new_board = resultingBoardFromMove(board, action) # Get the new board after making a possible action
         min_val, _ = min_value(new_board) # Get the min value from this new board
         if min_val > v: 
             v = min_val # Update v to the new min value if its greater than current v
@@ -116,11 +116,11 @@ def max_value(board):
 
 def min_value(board):
     if terminal(board): # is the game over?
-        return utility(board), None  # return who won or return None if its a draw
+        return gameResult(board), None  # return who won or return None if its a draw
     v = math.inf # Initialize v to positive infinity for minimizing player
     best_action = None
-    for action in actions(board): # For all possile actions
-        new_board = result(board, action) # Get the new board after making a possible action
+    for action in allPossibleMoves(board): # For all possile actions
+        new_board = resultingBoardFromMove(board, action) # Get the new board after making a possible action
         max_val, _ = max_value(new_board) # Get the max value from this new board
         if max_val < v:
             v = max_val # Update v to the new max value if its less than current v
